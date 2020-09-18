@@ -91,6 +91,20 @@ class AccessProjectStack(core.Stack):
             handler='generate_db_response.generate_db_response',
         )
 
+        send_notification_response = _lambda.Function(
+            self, 'SendNotificationResponseHandler',
+            runtime=_lambda.Runtime.PYTHON_3_7,
+            code=_lambda.Code.asset('lambda'),
+            handler='send_notification_response.send_notification_response',
+        )
+
+        write_to_failedlogins_response = _lambda.Function(
+            self, 'WriteToFailedloginsHandler',
+            runtime=_lambda.Runtime.PYTHON_3_7,
+            code=_lambda.Code.asset('lambda'),
+            handler='write_to_failedlogins_response.write_to_failed_login_table',
+        )
+
         start_dbcheck_state_machine = _lambda.Function(
             self, 'StartDbcheckStateMachineHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,
