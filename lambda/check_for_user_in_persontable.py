@@ -14,6 +14,6 @@ def get_user(event, context):
         }
     except:
         response = {
-            "notfound": "true"
+            "user": "unknown"
         }
     return response

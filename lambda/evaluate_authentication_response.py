@@ -1,14 +1,8 @@
 def evaluate_authentication_response(event, context):
-    if event['face'] == 'unknown':
+    if event['state'] == 'failed':
         response = {
             "access": "deny",
-            "message": "Access denied. Face recognition did not find a match."
-        }
-
-    elif event['face'] == 'notavailable':
-        response = {
-            "access": "deny",
-            "message": "Access denied. Reference image for user not found."
+            "message": "Access denied. User authentication failed."
         }
 
     elif event['state'] == 'capacity':
@@ -17,13 +11,13 @@ def evaluate_authentication_response(event, context):
             "message": "Access denied. Maximum number of concurrent users reached."
         }
 
-    elif event['state'] == 'login' and event['face'] == 'recognized':
+    elif event['state'] == 'login':
         response = {
             "access": "allow",
             "message": "Access allowed. User logged in successfully."
         }
 
-    elif event['state'] == 'logout' and event['face'] == 'recognized':
+    elif event['state'] == 'logout':
         response = {
             "access": "allow",
             "message": "Access allowed. User logged out successfully."
@@ -34,5 +28,6 @@ def evaluate_authentication_response(event, context):
 
     return {
         "user": event['user'],
-        "response": response
+        "response": response,
+        "state": event['state']
     }

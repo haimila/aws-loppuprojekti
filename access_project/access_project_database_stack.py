@@ -1,16 +1,10 @@
 from aws_cdk import (
-    aws_s3 as s3,
     aws_dynamodb as dynamodb,
     core
 )
 class DatabaseStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
-
-        # create a bucket "vattubuck"
-        bucket = s3.Bucket(
-            self,"vattubuck",
-            versioned=True, )
 
         # create a table called "person"
         self._table = dynamodb.Table(

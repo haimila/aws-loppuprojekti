@@ -62,3 +62,4 @@ writeresponse = write_rfid_tag()
 take_picture()
 send_user_info_to_sns(writeresponse)
 upload_profile_photo(writeresponse)
+

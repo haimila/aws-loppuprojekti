@@ -9,5 +9,5 @@ def start_state_machine(event, context):
     userid = objectkey[:-12]
 
     sfn.start_execution(
-        stateMachineArn='arn:aws:states:us-east-1:821383200340:stateMachine:AccessControlDBCheck',
+        stateMachineArn='arn:aws:states:us-east-1:821383200340:stateMachine:AccessControlCheckV2',
         input=json.dumps({"userid": userid}))

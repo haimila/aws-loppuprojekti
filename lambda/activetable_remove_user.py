@@ -10,5 +10,6 @@ def remove_user_from_active_table(event, context):
     table.delete_item(Key={'id': userid})
 
     return {
-        "message": "User logged out succesfully"
+        "user": event['user'],
+        "state": "logout"
     }

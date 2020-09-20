@@ -4,24 +4,30 @@ client = boto3.client('rekognition', region_name='us-east-1')
 
 
 def compare_faces(event, contex):
-    userid = event['userid']
-    sourceimage = f'{userid}.jpg'
-    targetimage = f'{userid}-capture.jpg'
+    try:
+        userid = event['userid']
+        sourceimage = f'{userid}.jpg'
+        targetimage = f'{userid}-capture.jpg'
 
-    response = client.compare_faces(
-        SimilarityThreshold=90,
-        SourceImage={
-            'S3Object': {
-                'Bucket': 'rasberry-bucket',
-                'Name': sourceimage
+        facedata = client.compare_faces(
+            SimilarityThreshold=90,
+            SourceImage={
+                'S3Object': {
+                    'Bucket': 'rasberry-bucket',
+                    'Name': sourceimage
+                }
+            },
+            TargetImage={
+                'S3Object': {
+                    'Bucket': 'rasberry-bucket',
+                    'Name': targetimage
+                }
             }
-        },
-        TargetImage={
-            'S3Object': {
-                'Bucket': 'rasberry-bucket',
-                'Name': targetimage
-            }
-        }
-    )
+        )
+
+        response = {"face": facedata}
+
+    except:
+        response = {"face": "notavailable"}
 
     return response
