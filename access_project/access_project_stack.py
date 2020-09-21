@@ -3,8 +3,11 @@ from aws_cdk import (
     aws_sns as sns,
     aws_sns_subscriptions as subscriptions,
     aws_lambda as _lambda,
+    aws_iam as iam,
     core
 )
+from aws_cdk.aws_iam import PolicyDocument
+
 
 class AccessProjectStack(core.Stack):
 
@@ -32,6 +35,7 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='activetable_put_user.create_active_user',
+            role=iam.Role.from_role_arn(self, "Role", "arn:aws:iam::821383200340:role/service-role/AddUserToActiveTable-role-9c7mvw7j"),
         )
 
         # create a lambda subscription for "WriteTag" topic
@@ -43,6 +47,7 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='activetable_remove_user.remove_user_from_active_table',
+            role=iam.Role.from_role_arn(self, "Role1", "arn:aws:iam::821383200340:role/service-role/RemoveUserFromActiveTable-role-9lthk0xg"),
         )
 
         # create a lambda function "check_for_concurrent_users"
@@ -51,6 +56,7 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='check_for_concurrent_users.check_for_concurrent_users',
+            role=iam.Role.from_role_arn(self, "Role2","arn:aws:iam::821383200340:role/service-role/CheckForConcurrentUsers-role-epxetlgs"),
         )
 
         # create a lambda function "get_user"
@@ -59,6 +65,7 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='check_for_user_in_persontable.get_user',
+            role=iam.Role.from_role_arn(self, "Role3", "arn:aws:iam::821383200340:role/service-role/CheckForUserInPersonTable-role-0n0psw3z"),
         )
 
         # create a lambda function "check_if_user_is_active"
@@ -67,6 +74,7 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='check_if_user_is_active.check_if_user_is_active',
+            role=iam.Role.from_role_arn(self, "Role4", "arn:aws:iam::821383200340:role/service-role/CheckIfUserIsActive-role-lk0xfpmp"),
         )
 
         # create a lambda function "compare_faces"
@@ -75,6 +83,7 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='compare_faces.compare_faces',
+            role=iam.Role.from_role_arn(self, "Role5", "arn:aws:iam::821383200340:role/service-role/CompareFaces-role-msdqo5rc"),
         )
 
         # create a lambda function "evaluate_authentication_response"
@@ -82,7 +91,8 @@ class AccessProjectStack(core.Stack):
             self, 'EvaluateAuthenticationResponseHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
-            handler='evaluate_authentication_response.evaluate_authentication_response'
+            handler='evaluate_authentication_response.evaluate_authentication_response',
+            role=iam.Role.from_role_arn(self, "Role6", "arn:aws:iam::821383200340:role/service-role/EvaluateAuthenticationResponse-role-n1k99vpx"),
         )
 
         # create a lambda function "evaluate_initial_authentication"
@@ -90,7 +100,8 @@ class AccessProjectStack(core.Stack):
             self, 'EvaluateInitialAuthenticationHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
-            handler='evaluate_initial_authentication.evaluate_initial_authentication'
+            handler='evaluate_initial_authentication.evaluate_initial_authentication',
+            role=iam.Role.from_role_arn(self, "Role7", "arn:aws:iam::821383200340:role/service-role/EvaluateInitialAuthentication-role-a3tjga8s"),
         )
 
         # create a lambda function "generate_db_response"
@@ -99,6 +110,7 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='generate_db_response.generate_db_response',
+            role=iam.Role.from_role_arn(self, "Role8", "arn:aws:iam::821383200340:role/service-role/EvaluateInitialAuthentication-role-a3tjga8s"),
         )
 
         # create a lambda function "parse_rekognition_response"
@@ -107,6 +119,7 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='parse_rekognition_response.parse_rekognition_response',
+            role=iam.Role.from_role_arn(self, "Role9", "arn:aws:iam::821383200340:role/service-role/ParseRekognitionResponse-role-c8tpa6ie"),
         )
 
         # create a lambda function "create_new_user"
@@ -115,6 +128,7 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='persontable_put_user.create_new_user',
+            role=iam.Role.from_role_arn(self, "Role10", "arn:aws:iam::821383200340:role/service-role/AccessControl-CreateUser-role-up0ka8vh"),
         )
 
         # create a lambda function "send_notification_response"
@@ -123,14 +137,16 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='send_notification_response.send_notification_response',
+            role=iam.Role.from_role_arn(self, "Role11", "arn:aws:iam::821383200340:role/service-role/SendAuthenticationResponse-role-xvkhrcwo"),
         )
 
         # create a lambda function "start_state_machine"
-        start_dbcheck_state_machine = _lambda.Function(
-            self, 'StartDbcheckStateMachineHandler',
+        start_state_machine = _lambda.Function(
+            self, 'StartStateMachineHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
-            handler='start_dbcheck_state-machine.start_state_machine',
+            handler='start_state-machine.start_state_machine',
+            role=iam.Role.from_role_arn(self, "Role12", "arn:aws:iam::821383200340:role/service-role/StartStateMachine-role-a84dxv22"),
         )
 
         # create a lambda function "write_to_failed_login_table"
@@ -139,6 +155,7 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='write_to_failedlogins.write_to_failed_login_table',
+            role=iam.Role.from_role_arn(self, "Role13", "arn:aws:iam::821383200340:role/service-role/WriteToFailedLoginTable-role-n6284xpn"),
         )
 
         # create a lambda function "write_to_login_events"
@@ -147,6 +164,7 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='write_to_login_events.write_to_login_events',
+            role=iam.Role.from_role_arn(self, "Role14", "arn:aws:iam::821383200340:role/service-role/WriteToLoginEvents-role-mq6s2b7w"),
         )
 
         # create a lambda function "write_to_logout_events"
@@ -155,4 +173,5 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='write_to_logout_events.write_to_logout_events',
+            role=iam.Role.from_role_arn(self, "Role15", "arn:aws:iam::821383200340:role/service-role/WriteToLogoutEvents-role-efapsztj"),
         )
