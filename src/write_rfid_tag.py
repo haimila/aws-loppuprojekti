@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
 import uuid
@@ -10,11 +10,10 @@ import time
 reader = SimpleMFRC522()
 sns = boto3.client('sns')
 
-
 def write_rfid_tag():
     try:
         firstname = input('Please enter your first name: ')
-        lastname = input('Please enter your last name: ')
+        lastname = input ('Please enter your last name: ')
         print("Now place your tag to write")
         tag_id = reader.write(str(uuid.uuid4()))
         userid = tag_id[1]
@@ -29,8 +28,8 @@ def write_rfid_tag():
     finally:
         GPIO.cleanup()
 
-
 def send_user_info_to_sns(userdata):
+
     message = json.dumps(
         {
             "userId": userdata[0],
@@ -43,23 +42,20 @@ def send_user_info_to_sns(userdata):
         Subject='Write event for {user}'.format(user=userdata[0])
     )
 
-
 def take_picture():
-    camera = picamera.PiCamera()
-    print("Taking picture in 5 seconds")
-    time.sleep(5)
-    camera.rotation = 180
-    camera.capture('profilepic.jpg')
 
+    camera = picamera.PiCamera()
+    print("Taking picture in 3 seconds")
+    time.sleep(3)
+    camera.rotatio n =180
+    camera.capture('profilepic.jpg')
 
 def upload_profile_photo(userdata):
     s3 = boto3.resource('s3', region_name='us-east-1')
     BUCKET = "rasberry-bucket"
     s3.Bucket(BUCKET).upload_file("profilepic.jpg", f"{userdata[0]}.jpg")
 
-
 writeresponse = write_rfid_tag()
 take_picture()
 send_user_info_to_sns(writeresponse)
 upload_profile_photo(writeresponse)
-

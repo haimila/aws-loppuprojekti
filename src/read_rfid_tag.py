@@ -23,8 +23,8 @@ def read_rfid_tag():
 def take_picture():
 
     camera = picamera.PiCamera()
-    print("Taking picture in 5 seconds")
-    time.sleep(5)
+    print("Taking picture in 3 seconds")
+    time.sleep(3)
     camera.rotation=180
     camera.capture('example.jpg')
 

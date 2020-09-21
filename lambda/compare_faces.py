@@ -30,4 +30,5 @@ def compare_faces(event, contex):
     except:
         response = {"face": "notavailable"}
 
-    return response
+    finally:
+        return response
