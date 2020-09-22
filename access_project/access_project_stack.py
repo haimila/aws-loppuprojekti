@@ -6,18 +6,21 @@ from aws_cdk import (
     aws_iam as iam,
     core
 )
-from aws_cdk.aws_iam import PolicyDocument
-
 
 class AccessProjectStack(core.Stack):
+
+    @property
+    def bucket(self, _default = None):
+        return self._bucket
 
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        # create a bucket "vattubuck"
-        bucket = s3.Bucket(
-            self, "vattubuck",
-            versioned=True, )
+        # create a bucket "AccessProjectBucket"
+        self._bucket = s3.Bucket(
+            self, "AccessProjectBucket",
+            versioned=True,
+        )
 
         # create a topic "WriteTag"
         write_topic = sns.Topic(
