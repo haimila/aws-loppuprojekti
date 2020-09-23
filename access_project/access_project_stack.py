@@ -16,6 +16,10 @@ class AccessProjectStack(core.Stack):
     def bucket(self, _default = None):
         return self._bucket
 
+    @property
+    def capture_bucket(self, _default=None):
+        return self._capture_bucket
+
     def __init__(self, scope: core.Construct, id: str, active_table: dynamodb.Table, person_table: dynamodb.Table, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
@@ -25,14 +29,20 @@ class AccessProjectStack(core.Stack):
             versioned=True
         )
 
+        # lifecycle_rule = s3.LifecycleRule(
+        #     expiration=1
+        # )
+
         # create a bucket "AccessProjectCaptureBucket"
         self._capture_bucket = s3.Bucket(
-            self, "AccessProjectCaptureBucket"
+            self, "AccessProjectCaptureBucket",
+            #lifecycle_rules=[lifecycle_rule]
         )
 
-        self._capture_bucket = s3.LifecycleRule(
-            expiration=1
-        )
+        #TODO This is still under development
+        # duration = core.Duration()
+        # duration.days('1')
+        # self._capture_bucket.add_lifecycle_rule(expiration=duration)
 
         # create a topic "WriteTag"
         write_topic = sns.Topic(
@@ -140,7 +150,10 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='compare_faces.compare_faces',
-            initial_policy=[compare_faces_bucket_policy_statement, rekognition_policy_statement]
+            initial_policy=[compare_faces_bucket_policy_statement, rekognition_policy_statement],
+            environment={"original_photo_bucket": self._bucket.bucket_name,
+                         "capture_photo_bucket": self._capture_bucket.bucket_name
+                         }
         )
 
         # create a lambda function "evaluate_authentication_response"
@@ -148,8 +161,7 @@ class AccessProjectStack(core.Stack):
             self, 'EvaluateAuthenticationResponseHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
-            handler='evaluate_authentication_response.evaluate_authentication_response',
-            role=iam.Role.from_role_arn(self, "Role6", "arn:aws:iam::821383200340:role/service-role/EvaluateAuthenticationResponse-role-n1k99vpx"),
+            handler='evaluate_authentication_response.evaluate_authentication_response'
         )
 
         # create a lambda function "evaluate_initial_authentication"
@@ -157,8 +169,7 @@ class AccessProjectStack(core.Stack):
             self, 'EvaluateInitialAuthenticationHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
-            handler='evaluate_initial_authentication.evaluate_initial_authentication',
-            role=iam.Role.from_role_arn(self, "Role7", "arn:aws:iam::821383200340:role/service-role/EvaluateInitialAuthentication-role-a3tjga8s"),
+            handler='evaluate_initial_authentication.evaluate_initial_authentication'
         )
 
         # create a lambda function "generate_db_response"
@@ -166,8 +177,7 @@ class AccessProjectStack(core.Stack):
             self, 'GenerateDbResponseHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
-            handler='generate_db_response.generate_db_response',
-            role=iam.Role.from_role_arn(self, "Role8", "arn:aws:iam::821383200340:role/service-role/EvaluateInitialAuthentication-role-a3tjga8s"),
+            handler='generate_db_response.generate_db_response'
         )
 
         # create a lambda function "parse_rekognition_response"
@@ -175,8 +185,7 @@ class AccessProjectStack(core.Stack):
             self, 'ParseRekognitionResponseHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
-            handler='parse_rekognition_response.parse_rekognition_response',
-            role=iam.Role.from_role_arn(self, "Role9", "arn:aws:iam::821383200340:role/service-role/ParseRekognitionResponse-role-c8tpa6ie"),
+            handler='parse_rekognition_response.parse_rekognition_response'
         )
 
         # create an iam policy statement to allow lambda function to create user to person table
@@ -194,7 +203,13 @@ class AccessProjectStack(core.Stack):
             initial_policy=[person_table_put_user_policy_statement]
         )
 
-        # create a lambda function "send_notification_response"
+        # create an iam policy statement to allow lambda function to publish to iot topic
+        publish_to_iot_policy_statement = iam.PolicyStatement(
+            actions=["iot:Publish"],
+            resources=["*"]
+        )
+
+        # create a lambda function "publish_to_iot"
         publish_to_iot_topic = _lambda.Function(
             self, 'PublishToIoTTopicHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,

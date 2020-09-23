@@ -9,7 +9,6 @@ def compare_faces(event, contex):
         userid = event['userid']
         sourceimage = f'{userid}.jpg'
         targetimage = f'{userid}-capture.jpg'
-
         facedata = client.compare_faces(
             SimilarityThreshold=90,
             SourceImage={
