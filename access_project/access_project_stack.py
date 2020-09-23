@@ -193,12 +193,11 @@ class AccessProjectStack(core.Stack):
         )
 
         # create a lambda function "send_notification_response"
-        send_notification_response = _lambda.Function(
-            self, 'SendNotificationResponseHandler',
+        publish_to_iot_topic = _lambda.Function(
+            self, 'PublishToIoTTopicHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
-            handler='send_notification_response.send_notification_response',
-            role=iam.Role.from_role_arn(self, "Role11", "arn:aws:iam::821383200340:role/service-role/SendAuthenticationResponse-role-xvkhrcwo"),
+            handler='publish_to_iot_topic.publish_to_iot'
         )
 
         # create a lambda function "start_state_machine"
