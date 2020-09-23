@@ -5,8 +5,10 @@ from aws_cdk import (
     aws_lambda as _lambda,
     aws_iam as iam,
     aws_dynamodb as dynamodb,
+    aws_stepfunctions as sf,
     core
 )
+import json
 
 class AccessProjectStack(core.Stack):
 
@@ -235,3 +237,213 @@ class AccessProjectStack(core.Stack):
             handler='write_to_logout_events.write_to_logout_events',
             role=iam.Role.from_role_arn(self, "Role15", "arn:aws:iam::821383200340:role/service-role/WriteToLogoutEvents-role-efapsztj"),
         )
+
+        state_machine = sf.CfnStateMachine(
+            self, 'AccessControlStateMachine',
+            role_arn='arn:aws:iam::821383200340:role/service-role/StepFunctions-AccessControlCheckV2-role-814f6a0a',
+            definition_string=json.dumps({
+               "Comment":"RFID tag read state machine",
+               "StartAt":"StartUserAuthentication",
+               "States":{
+                  "StartUserAuthentication":{
+                     "Type":"Parallel",
+                     "Next":"EvaluateInitialAuthentication",
+                     "Branches":[
+                        {
+                           "StartAt":"CheckForUserInPersonTable",
+                           "States":{
+                              "CheckForUserInPersonTable":{
+                                 "Type":"Task",
+                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                                 "End":true
+                              }
+                           }
+                        },
+                        {
+                           "StartAt":"CompareFaces",
+                           "States":{
+                              "CompareFaces":{
+                                 "Type":"Task",
+                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CompareFaces",
+                                 "Next":"IsFaceInS3?"
+                              },
+                              "IsFaceInS3?":{
+                                 "Type":"Choice",
+                                 "Choices":[
+                                    {
+                                       "Not":{
+                                          "Variable":"$.face",
+                                          "StringEquals":"notavailable"
+                                       },
+                                       "Next":"ParseRekognitionResponse"
+                                    },
+                                    {
+                                       "Variable":"$.face",
+                                       "StringEquals":"notavailable",
+                                       "Next":"GenerateRekognitionResponse"
+                                    }
+                                 ],
+                                 "Default":"ChoiceErrorState1"
+                              },
+                              "ParseRekognitionResponse":{
+                                 "Type":"Task",
+                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:ParseRekognitionResponse",
+                                 "Next":"GenerateRekognitionResponse"
+                              },
+                              "GenerateRekognitionResponse":{
+                                 "Type":"Task",
+                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:GenerateRekognitionResponse",
+                                 "End":true
+                              },
+                              "ChoiceErrorState1":{
+                                 "Type":"Fail",
+                                 "Cause":"No Matches!"
+                              }
+                           }
+                        }
+                     ]
+                  },
+                  "EvaluateInitialAuthentication":{
+                     "Type":"Task",
+                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:EvaluateInitialAuthentication",
+                     "Next":"LoginSuccessful?"
+                  },
+                  "LoginSuccessful?":{
+                     "Type":"Choice",
+                     "Choices":[
+                        {
+                           "Variable":"$.state",
+                           "StringEquals":"continue",
+                           "Next":"CheckIfUserIsActive"
+                        },
+                        {
+                           "Variable":"$.state",
+                           "StringEquals":"failed",
+                           "Next":"GenerateDBResponse"
+                        }
+                     ],
+                     "Default":"ChoiceErrorState2"
+                  },
+                 "CheckIfUserIsActive":{
+                                 "Type":"Task",
+                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckIfUserIsActive",
+                                 "Next":"IsUserActive?"
+                              },
+                              "IsUserActive?":{
+                                 "Type":"Choice",
+                                 "Choices":[
+                                    {
+                                       "Variable":"$.logout",
+                                       "IsPresent":true,
+                                       "Next":"RemoveUserFromActiveTable"
+                                    },
+                                    {
+                                       "Variable":"$.login",
+                                       "IsPresent":true,
+                                       "Next":"CheckForConcurrentUsers"
+                                    }
+                                 ],
+                                 "Default":"ChoiceErrorState2"
+                              },
+                              "CheckForConcurrentUsers":{
+                                 "Type":"Task",
+                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForConcurrentUsers",
+                                 "Next":"CheckUserCount"
+                              },
+                              "CheckUserCount":{
+                                 "Type":"Choice",
+                                 "Choices":[
+                                    {
+                                       "Variable":"$.usercount",
+                                       "NumericLessThan":10,
+                                       "Next":"AddUserToActiveTable"
+                                    },
+                                    {
+                                       "Variable":"$.usercount",
+                                       "NumericGreaterThanEquals":10,
+                                       "Next":"GenerateDBResponse"
+                                    }
+                                 ],
+                                 "Default":"ChoiceErrorState2"
+                              },
+                              "RemoveUserFromActiveTable":{
+                                 "Type":"Task",
+                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:RemoveUserFromActiveTable",
+                                 "Next":"GenerateDBResponse"
+                              },
+                              "AddUserToActiveTable":{
+                                 "Type":"Task",
+                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:AddUserToActiveTable",
+                                 "Next":"GenerateDBResponse"
+                              },
+                              "GenerateDBResponse":{
+                                 "Type":"Task",
+                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:GenerateDBResponse",
+                                 "Next":"EvaluateAuthenticationResponse"
+                              },
+                               "ChoiceErrorState2":{
+                                 "Type":"Fail",
+                                 "Cause":"No Matches!"
+                              },
+                 "EvaluateAuthenticationResponse":{
+                     "Type":"Task",
+                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:EvaluateAuthenticationResponse",
+                     "Next": "WhichEventDBToWrite?"
+                },
+                 "WhichEventDBToWrite?":{
+                     "Type":"Choice",
+                     "Choices":[
+                           { "And": [
+                           {
+                           "Variable":"$.state",
+                           "StringEquals":"login"
+                           },
+                           {
+                           "Variable":"$.response.access",
+                           "StringEquals":"allow"
+                           }
+                          ],
+                           "Next":"WriteToLoginEvents"
+                          },
+                          { "And": [
+                           {
+                           "Variable":"$.state",
+                           "StringEquals":"logout"
+                           },
+                           {
+                           "Variable":"$.response.access",
+                           "StringEquals":"allow"
+                           }
+                          ],
+                           "Next":"WriteToLogoutEvents"
+                         },
+                        {
+                           "Variable":"$.response.access",
+                           "StringEquals":"deny",
+                           "Next":"WriteToDeniedLoginTable"
+                        }
+                     ]
+                 },
+                 "WriteToLoginEvents":{
+                     "Type":"Task",
+                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:WriteToLoginEvents",
+                     "Next": "PublishToIoTTopic"
+                },
+                 "WriteToLogoutEvents":{
+                     "Type":"Task",
+                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:WriteToLogoutEvents",
+                     "Next": "PublishToIoTTopic"
+                },
+                 "WriteToDeniedLoginTable":{
+                     "Type":"Task",
+                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:WriteToFailedLoginTable",
+                     "Next": "PublishToIoTTopic"
+                },
+                 "PublishToIoTTopic":{
+                     "Type":"Task",
+                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:PublishToIoTTopic",
+                     "End": true
+                }
+            }
+            })
+            )

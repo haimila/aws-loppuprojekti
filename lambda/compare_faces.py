@@ -1,4 +1,5 @@
 import boto3
+import os
 
 client = boto3.client('rekognition', region_name='us-east-1')
 
@@ -13,13 +14,13 @@ def compare_faces(event, contex):
             SimilarityThreshold=90,
             SourceImage={
                 'S3Object': {
-                    'Bucket': 'rasberry-bucket',
+                    'Bucket': os.environ['original_photo_bucket'],
                     'Name': sourceimage
                 }
             },
             TargetImage={
                 'S3Object': {
-                    'Bucket': 'rasberry-bucket',
+                    'Bucket': os.environ['capture_photo_bucket'],
                     'Name': targetimage
                 }
             }
