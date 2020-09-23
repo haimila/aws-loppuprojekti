@@ -9,12 +9,14 @@ class RaspberryStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, bucket: s3.Bucket, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
+        # create an iam policy statement for "WriteToS3Policy"
         write_to_s3_policy_statement = iam.PolicyStatement(
             sid="VisualEditor0",
             actions=["s3:PutObject"],
             resources=[bucket.bucket_arn]
         )
 
+        # create an iam user "RaspberryPiUser"
         rasberry_pi_user = iam.User(
             self, "RaspberryPiUser",
             managed_policies=[iam.ManagedPolicy.from_aws_managed_policy_name("AWSCodeCommitPowerUser"),
@@ -22,6 +24,7 @@ class RaspberryStack(core.Stack):
                               ]
         )
 
+        # create an iam policy "WriteToS3Policy"
         write_to_s3_policy = iam.Policy(
             self, "WriteToS3Policy",
             statements=[write_to_s3_policy_statement],

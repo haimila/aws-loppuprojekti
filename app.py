@@ -8,8 +8,8 @@ from access_project.access_project_raspberry_stack import RaspberryStack
 
 
 app = core.App()
-accessStack = AccessProjectStack(app, "access-project")
-DatabaseStack(app, "access-project-database")
+databaseStack = DatabaseStack(app, "access-project-database")
+accessStack = AccessProjectStack(app, "access-project", active_table=databaseStack.active_table, person_table=databaseStack.person_table)
 RaspberryStack(app, "access-project-raspberry", bucket=accessStack.bucket)
 
 app.synth()

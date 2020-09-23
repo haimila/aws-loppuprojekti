@@ -4,6 +4,7 @@ from aws_cdk import (
     aws_sns_subscriptions as subscriptions,
     aws_lambda as _lambda,
     aws_iam as iam,
+    aws_dynamodb as dynamodb,
     core
 )
 
@@ -13,13 +14,22 @@ class AccessProjectStack(core.Stack):
     def bucket(self, _default = None):
         return self._bucket
 
-    def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, id: str, active_table: dynamodb.Table, person_table: dynamodb.Table, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # create a bucket "AccessProjectBucket"
         self._bucket = s3.Bucket(
             self, "AccessProjectBucket",
-            versioned=True,
+            versioned=True
+        )
+
+        # create a bucket "AccessProjectCaptureBucket"
+        self._capture_bucket = s3.Bucket(
+            self, "AccessProjectCaptureBucket"
+        )
+
+        self._capture_bucket = s3.LifecycleRule(
+            expiration=1
         )
 
         # create a topic "WriteTag"
@@ -32,17 +42,29 @@ class AccessProjectStack(core.Stack):
             self, "SendUserDataToRaspberryPi"
         )
 
+        # create an iam policy statement to allow lambda function to write to dynamodb active table
+        write_to_activetable_policy_statement = iam.PolicyStatement(
+            actions=["dynamodb:PutItem"],
+            resources=[active_table.table_arn]
+        )
+
         # create a lambda function "create_active_user"
         activetable_put_user = _lambda.Function(
             self, 'ActivetablePutUserHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='activetable_put_user.create_active_user',
-            role=iam.Role.from_role_arn(self, "Role", "arn:aws:iam::821383200340:role/service-role/AddUserToActiveTable-role-9c7mvw7j"),
+            initial_policy=[write_to_activetable_policy_statement]
         )
 
         # create a lambda subscription for "WriteTag" topic
         write_topic.add_subscription(subscriptions.LambdaSubscription(activetable_put_user))
+
+        # create an iam policy statement to allow lambda function to remove user from dynamodb active table
+        delete_user_from_activetable_policy_statement = iam.PolicyStatement(
+            actions=["dynamodb:DeleteItem"],
+            resources=[active_table.table_arn]
+        )
 
         # create a lambda function "remove_user_from_active_table"
         activetable_remove_user = _lambda.Function(
@@ -50,7 +72,13 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='activetable_remove_user.remove_user_from_active_table',
-            role=iam.Role.from_role_arn(self, "Role1", "arn:aws:iam::821383200340:role/service-role/RemoveUserFromActiveTable-role-9lthk0xg"),
+            initial_policy=[delete_user_from_activetable_policy_statement]
+        )
+
+        # create an iam policy statement to allow lambda function to check for concurrent users from active table
+        check_for_concurrent_users_policy_statement = iam.PolicyStatement(
+            actions=["dynamodb:Scan"],
+            resources=[active_table.table_arn]
         )
 
         # create a lambda function "check_for_concurrent_users"
@@ -59,7 +87,13 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='check_for_concurrent_users.check_for_concurrent_users',
-            role=iam.Role.from_role_arn(self, "Role2","arn:aws:iam::821383200340:role/service-role/CheckForConcurrentUsers-role-epxetlgs"),
+            initial_policy=[check_for_concurrent_users_policy_statement]
+        )
+
+        # create an iam policy statement to allow lambda function to check if person exists in person table
+        check_for_user_in_persontable_policy_statement = iam.PolicyStatement(
+            actions=["dynamodb:GetItem"],
+            resources=[person_table.table_arn]
         )
 
         # create a lambda function "get_user"
@@ -68,7 +102,13 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='check_for_user_in_persontable.get_user',
-            role=iam.Role.from_role_arn(self, "Role3", "arn:aws:iam::821383200340:role/service-role/CheckForUserInPersonTable-role-0n0psw3z"),
+            initial_policy=[check_for_user_in_persontable_policy_statement]
+        )
+
+        # create an iam policy statement to allow lambda function to check if user exists in active table
+        check_if_user_is_active_policy_statement = iam.PolicyStatement(
+            actions=["dynamodb:GetItem"],
+            resources=[active_table.table_arn]
         )
 
         # create a lambda function "check_if_user_is_active"
@@ -77,7 +117,19 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='check_if_user_is_active.check_if_user_is_active',
-            role=iam.Role.from_role_arn(self, "Role4", "arn:aws:iam::821383200340:role/service-role/CheckIfUserIsActive-role-lk0xfpmp"),
+            initial_policy=[check_if_user_is_active_policy_statement]
+        )
+
+        # create an iam policy statement to allow lambda function to get object from access project bucket
+        compare_faces_bucket_policy_statement = iam.PolicyStatement(
+            actions=["s3:GetObject"],
+            resources=[self._bucket.bucket_arn]
+        )
+
+        # create an iam policy statement to allow lambda function to use rekognition
+        rekognition_policy_statement = iam.PolicyStatement(
+            actions=["rekognition:CompareFaces"],
+            resources=["*"]
         )
 
         # create a lambda function "compare_faces"
@@ -86,7 +138,7 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='compare_faces.compare_faces',
-            role=iam.Role.from_role_arn(self, "Role5", "arn:aws:iam::821383200340:role/service-role/CompareFaces-role-msdqo5rc"),
+            initial_policy=[compare_faces_bucket_policy_statement, rekognition_policy_statement]
         )
 
         # create a lambda function "evaluate_authentication_response"
@@ -125,13 +177,19 @@ class AccessProjectStack(core.Stack):
             role=iam.Role.from_role_arn(self, "Role9", "arn:aws:iam::821383200340:role/service-role/ParseRekognitionResponse-role-c8tpa6ie"),
         )
 
+        # create an iam policy statement to allow lambda function to create user to person table
+        person_table_put_user_policy_statement = iam.PolicyStatement(
+            actions=["dynamodb:PutItem"],
+            resources=[person_table.table_arn]
+        )
+
         # create a lambda function "create_new_user"
         persontable_put_user = _lambda.Function(
             self, 'PersontablePutUserHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='persontable_put_user.create_new_user',
-            role=iam.Role.from_role_arn(self, "Role10", "arn:aws:iam::821383200340:role/service-role/AccessControl-CreateUser-role-up0ka8vh"),
+            initial_policy=[person_table_put_user_policy_statement]
         )
 
         # create a lambda function "send_notification_response"

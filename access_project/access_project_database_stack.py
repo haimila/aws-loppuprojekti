@@ -3,37 +3,46 @@ from aws_cdk import (
     core
 )
 class DatabaseStack(core.Stack):
+
+    @property
+    def active_table(self, _default=None):
+        return self._active_table
+
+    @property
+    def person_table(self, _default=None):
+        return self._person_table
+
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # create a table called "person"
-        self._table = dynamodb.Table(
+        self._person_table = dynamodb.Table(
             self, 'person',
             partition_key={'name': 'id', 'type': dynamodb.AttributeType.STRING},
         )
 
         # create a table called "active"
-        self._table = dynamodb.Table(
+        self._active_table = dynamodb.Table(
             self, 'active',
             partition_key={'name': 'id', 'type': dynamodb.AttributeType.STRING},
         )
 
         # create a table called "loginevents"
-        self._table = dynamodb.Table(
+        self._loginevents_table = dynamodb.Table(
             self, 'loginevents',
             partition_key={'name': 'eventid', 'type': dynamodb.AttributeType.STRING},
             sort_key={'name': 'userid', 'type': dynamodb.AttributeType.STRING}
         )
 
         # create a table called "logoutevents"
-        self._table = dynamodb.Table(
+        self._logoutevents_table = dynamodb.Table(
             self, 'logoutevents',
             partition_key={'name': 'eventid', 'type': dynamodb.AttributeType.STRING},
             sort_key={'name': 'userid', 'type': dynamodb.AttributeType.STRING}
         )
 
         # create a table called "failedlogins"
-        self._table = dynamodb.Table(
+        self._failedlogins_table = dynamodb.Table(
             self, 'failedlogins',
             partition_key={'name': 'eventid', 'type': dynamodb.AttributeType.STRING},
             sort_key={'name': 'userid', 'type': dynamodb.AttributeType.STRING}
