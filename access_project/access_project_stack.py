@@ -269,7 +269,7 @@ class AccessProjectStack(core.Stack):
                            "States":{
                               "CheckForUserInPersonTable":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                                 "Resource":"%s",
                                  "End":true
                               }
                            }
@@ -279,7 +279,7 @@ class AccessProjectStack(core.Stack):
                            "States":{
                               "CompareFaces":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CompareFaces",
+                                 "Resource":"%s",
                                  "Next":"IsFaceInS3?"
                               },
                               "IsFaceInS3?":{
@@ -302,12 +302,12 @@ class AccessProjectStack(core.Stack):
                               },
                               "ParseRekognitionResponse":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:ParseRekognitionResponse",
+                                 "Resource":"%s",
                                  "Next":"GenerateRekognitionResponse"
                               },
                               "GenerateRekognitionResponse":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:GenerateRekognitionResponse",
+                                 "Resource":"%s",
                                  "End":true
                               },
                               "ChoiceErrorState1":{
@@ -320,7 +320,7 @@ class AccessProjectStack(core.Stack):
                   },
                   "EvaluateInitialAuthentication":{
                      "Type":"Task",
-                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:EvaluateInitialAuthentication",
+                     "Resource":"%s",
                      "Next":"LoginSuccessful?"
                   },
                   "LoginSuccessful?":{
@@ -341,7 +341,7 @@ class AccessProjectStack(core.Stack):
                   },
                  "CheckIfUserIsActive":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckIfUserIsActive",
+                                 "Resource":"%s",
                                  "Next":"IsUserActive?"
                               },
                               "IsUserActive?":{
@@ -362,7 +362,7 @@ class AccessProjectStack(core.Stack):
                               },
                               "CheckForConcurrentUsers":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForConcurrentUsers",
+                                 "Resource":"%s",
                                  "Next":"CheckUserCount"
                               },
                               "CheckUserCount":{
@@ -383,17 +383,17 @@ class AccessProjectStack(core.Stack):
                               },
                               "RemoveUserFromActiveTable":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:RemoveUserFromActiveTable",
+                                 "Resource":"%s",
                                  "Next":"GenerateDBResponse"
                               },
                               "AddUserToActiveTable":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:AddUserToActiveTable",
+                                 "Resource":"%s",
                                  "Next":"GenerateDBResponse"
                               },
                               "GenerateDBResponse":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:GenerateDBResponse",
+                                 "Resource":"%s",
                                  "Next":"EvaluateAuthenticationResponse"
                               },
                                "ChoiceErrorState2":{
@@ -402,7 +402,7 @@ class AccessProjectStack(core.Stack):
                               },
                  "EvaluateAuthenticationResponse":{
                      "Type":"Task",
-                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:EvaluateAuthenticationResponse",
+                     "Resource":"%s",
                      "Next": "WhichEventDBToWrite?"
                 },
                  "WhichEventDBToWrite?":{
@@ -441,24 +441,24 @@ class AccessProjectStack(core.Stack):
                  },
                  "WriteToLoginEvents":{
                      "Type":"Task",
-                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:WriteToLoginEvents",
+                     "Resource":"%s",
                      "Next": "PublishToIoTTopic"
                 },
                  "WriteToLogoutEvents":{
                      "Type":"Task",
-                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:WriteToLogoutEvents",
+                     "Resource":"%s",
                      "Next": "PublishToIoTTopic"
                 },
                  "WriteToDeniedLoginTable":{
                      "Type":"Task",
-                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:WriteToFailedLoginTable",
+                     "Resource":"%s",
                      "Next": "PublishToIoTTopic"
                 },
                  "PublishToIoTTopic":{
                      "Type":"Task",
-                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:PublishToIoTTopic",
+                     "Resource":"%s",
                      "End": true
                 }
             }
-            }'''
+            }''' % (check_for_user_in_persontable.function_arn)
             )
