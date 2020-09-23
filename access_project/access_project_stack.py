@@ -8,9 +8,9 @@ from aws_cdk import (
     aws_stepfunctions as sf,
     core
 )
-import json
 
 class AccessProjectStack(core.Stack):
+
 
     @property
     def bucket(self, _default = None):
@@ -20,7 +20,10 @@ class AccessProjectStack(core.Stack):
     def capture_bucket(self, _default=None):
         return self._capture_bucket
 
-    def __init__(self, scope: core.Construct, id: str, active_table: dynamodb.Table, person_table: dynamodb.Table, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, id: str,
+                 active_table: dynamodb.Table, person_table: dynamodb.Table, failedlogins_table: dynamodb.Table,
+                 loginevents_table: dynamodb.Table, logoutevents_table: dynamodb.Table,
+                 **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # create a bucket "AccessProjectBucket"
@@ -214,16 +217,14 @@ class AccessProjectStack(core.Stack):
             self, 'PublishToIoTTopicHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
-            handler='publish_to_iot_topic.publish_to_iot'
+            handler='publish_to_iot_topic.publish_to_iot',
+            initial_policy=[publish_to_iot_policy_statement]
         )
 
-        # create a lambda function "start_state_machine"
-        start_state_machine = _lambda.Function(
-            self, 'StartStateMachineHandler',
-            runtime=_lambda.Runtime.PYTHON_3_7,
-            code=_lambda.Code.asset('lambda'),
-            handler='start_state-machine.start_state_machine',
-            role=iam.Role.from_role_arn(self, "Role12", "arn:aws:iam::821383200340:role/service-role/StartStateMachine-role-a84dxv22"),
+        # create an iam policy statement to allow lambda function to write to failedloginevents table
+        write_to_failed_login_table_policy_statement = iam.PolicyStatement(
+            actions=["dynamodb:PutItem"],
+            resources=[failedlogins_table.table_arn]
         )
 
         # create a lambda function "write_to_failed_login_table"
@@ -232,7 +233,13 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='write_to_failedlogins.write_to_failed_login_table',
-            role=iam.Role.from_role_arn(self, "Role13", "arn:aws:iam::821383200340:role/service-role/WriteToFailedLoginTable-role-n6284xpn"),
+            initial_policy=[write_to_failed_login_table_policy_statement]
+        )
+
+        # create an iam policy statement to allow lambda function to write to loginevents table
+        write_to_login_events_policy_statement = iam.PolicyStatement(
+            actions=["dynamodb:PutItem"],
+            resources=[loginevents_table.table_arn]
         )
 
         # create a lambda function "write_to_login_events"
@@ -241,7 +248,13 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='write_to_login_events.write_to_login_events',
-            role=iam.Role.from_role_arn(self, "Role14", "arn:aws:iam::821383200340:role/service-role/WriteToLoginEvents-role-mq6s2b7w"),
+            initial_policy=[write_to_login_events_policy_statement]
+        )
+
+        # create an iam policy statement to allow lambda function to write to logoutevents table
+        write_to_logout_events_policy_statement = iam.PolicyStatement(
+            actions=["dynamodb:PutItem"],
+            resources=[logoutevents_table.table_arn]
         )
 
         # create a lambda function "write_to_logout_events"
@@ -250,7 +263,7 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='write_to_logout_events.write_to_logout_events',
-            role=iam.Role.from_role_arn(self, "Role15", "arn:aws:iam::821383200340:role/service-role/WriteToLogoutEvents-role-efapsztj"),
+            initial_policy=[write_to_logout_events_policy_statement]
         )
 
         state_machine = sf.CfnStateMachine(
@@ -462,3 +475,18 @@ class AccessProjectStack(core.Stack):
             }
             }''' % (check_for_user_in_persontable.function_arn)
             )
+
+        # create an iam policy statement to allow lambda function to step functions state machine execution
+        start_state_machine_policy_statement = iam.PolicyStatement(
+            actions=["states:StartExecution"],
+            resources=["*"]
+        )
+
+        # create a lambda function "start_state_machine"
+        start_state_machine = _lambda.Function(
+            self, 'StartStateMachineHandler',
+            runtime=_lambda.Runtime.PYTHON_3_7,
+            code=_lambda.Code.asset('lambda'),
+            handler='start_state-machine.start_state_machine',
+            initial_policy=[start_state_machine_policy_statement]
+        )

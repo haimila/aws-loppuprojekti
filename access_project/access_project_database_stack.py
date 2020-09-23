@@ -5,12 +5,24 @@ from aws_cdk import (
 class DatabaseStack(core.Stack):
 
     @property
+    def person_table(self, _default=None):
+        return self._person_table
+
+    @property
     def active_table(self, _default=None):
         return self._active_table
 
     @property
-    def person_table(self, _default=None):
-        return self._person_table
+    def loginevents_table(self, _default=None):
+        return self._loginevents_table
+
+    @property
+    def logoutevents_table(self, _default=None):
+        return self._logoutevents_table
+
+    @property
+    def failedlogins_table(self, _default=None):
+        return self._failedlogins_table
 
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
