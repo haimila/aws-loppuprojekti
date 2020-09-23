@@ -159,6 +159,14 @@ class AccessProjectStack(core.Stack):
                          }
         )
 
+        # create a lambda function "generate_rekognition_response"
+        generate_rekognition_response = _lambda.Function(
+            self, 'GenerateRekognitionResponse',
+            runtime=_lambda.Runtime.PYTHON_3_7,
+            code=_lambda.Code.asset('lambda'),
+            handler='generate_rekognition_response.generate_rekognition_response'
+        )
+
         # create a lambda function "evaluate_authentication_response"
         evaluate_authentication_response = _lambda.Function(
             self, 'EvaluateAuthenticationResponseHandler',
@@ -292,7 +300,7 @@ class AccessProjectStack(core.Stack):
                            "States":{
                               "CompareFaces":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                                 "Resource":"%s",
                                  "Next":"IsFaceInS3?"
                               },
                               "IsFaceInS3?":{
@@ -315,12 +323,12 @@ class AccessProjectStack(core.Stack):
                               },
                               "ParseRekognitionResponse":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                                 "Resource":"%s",
                                  "Next":"GenerateRekognitionResponse"
                               },
                               "GenerateRekognitionResponse":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                                 "Resource":"%s",
                                  "End":true
                               },
                               "ChoiceErrorState1":{
@@ -333,7 +341,7 @@ class AccessProjectStack(core.Stack):
                   },
                   "EvaluateInitialAuthentication":{
                      "Type":"Task",
-                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                     "Resource":"%s",
                      "Next":"LoginSuccessful?"
                   },
                   "LoginSuccessful?":{
@@ -354,7 +362,7 @@ class AccessProjectStack(core.Stack):
                   },
                  "CheckIfUserIsActive":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                                 "Resource":"%s",
                                  "Next":"IsUserActive?"
                               },
                               "IsUserActive?":{
@@ -375,7 +383,7 @@ class AccessProjectStack(core.Stack):
                               },
                               "CheckForConcurrentUsers":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                                 "Resource":"%s",
                                  "Next":"CheckUserCount"
                               },
                               "CheckUserCount":{
@@ -396,17 +404,17 @@ class AccessProjectStack(core.Stack):
                               },
                               "RemoveUserFromActiveTable":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                                 "Resource":"%s",
                                  "Next":"GenerateDBResponse"
                               },
                               "AddUserToActiveTable":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                                 "Resource":"%s",
                                  "Next":"GenerateDBResponse"
                               },
                               "GenerateDBResponse":{
                                  "Type":"Task",
-                                 "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                                 "Resource":"%s",
                                  "Next":"EvaluateAuthenticationResponse"
                               },
                                "ChoiceErrorState2":{
@@ -415,7 +423,7 @@ class AccessProjectStack(core.Stack):
                               },
                  "EvaluateAuthenticationResponse":{
                      "Type":"Task",
-                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                     "Resource":"%s",
                      "Next": "WhichEventDBToWrite?"
                 },
                  "WhichEventDBToWrite?":{
@@ -454,26 +462,41 @@ class AccessProjectStack(core.Stack):
                  },
                  "WriteToLoginEvents":{
                      "Type":"Task",
-                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                     "Resource":"%s",
                      "Next": "PublishToIoTTopic"
                 },
                  "WriteToLogoutEvents":{
                      "Type":"Task",
-                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                     "Resource":"%s",
                      "Next": "PublishToIoTTopic"
                 },
                  "WriteToDeniedLoginTable":{
                      "Type":"Task",
-                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                     "Resource":"%s",
                      "Next": "PublishToIoTTopic"
                 },
                  "PublishToIoTTopic":{
                      "Type":"Task",
-                     "Resource":"arn:aws:lambda:us-east-1:821383200340:function:CheckForUserInPersonTable",
+                     "Resource":"%s",
                      "End": true
                 }
             }
-            }''' % (check_for_user_in_persontable.function_arn)
+            }''' % (check_for_user_in_persontable.function_arn,
+                    compare_faces.function_arn,
+                    parse_rekognition_response.function_arn,
+                    generate_rekognition_response.function_arn,
+                    evaluate_initial_authentication.function_arn,
+                    check_if_user_is_active.function_arn,
+                    check_for_concurrent_users.function_arn,
+                    activetable_remove_user.function_arn,
+                    activetable_put_user.function_arn,
+                    generate_db_response.function_arn,
+                    evaluate_authentication_response.function_arn,
+                    write_to_login_events.function_arn,
+                    write_to_logout_events.function_arn,
+                    write_to_failedlogins.function_arn,
+                    publish_to_iot_topic.function_arn
+                    )
             )
 
         # create an iam policy statement to allow lambda function to step functions state machine execution
