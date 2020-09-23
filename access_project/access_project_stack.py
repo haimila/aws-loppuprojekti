@@ -241,7 +241,7 @@ class AccessProjectStack(core.Stack):
         state_machine = sf.CfnStateMachine(
             self, 'AccessControlStateMachine',
             role_arn='arn:aws:iam::821383200340:role/service-role/StepFunctions-AccessControlCheckV2-role-814f6a0a',
-            definition_string=json.dumps({
+            definition_string='''{
                "Comment":"RFID tag read state machine",
                "StartAt":"StartUserAuthentication",
                "States":{
@@ -445,5 +445,5 @@ class AccessProjectStack(core.Stack):
                      "End": true
                 }
             }
-            })
+            }'''
             )
