@@ -7,8 +7,6 @@ import json
 import picamera
 import time
 
-from access_project_stack import AccessProjectStack
-
 reader = SimpleMFRC522()
 sns = boto3.client('sns')
 
@@ -39,7 +37,7 @@ def send_user_info_to_sns(userdata):
             "lastName": userdata[2]
         })
     sns.publish(
-        TopicArn='arn:aws:sns:us-east-1:821383200340:WriteTagTopic',
+        TopicArn='arn:aws:sns:us-east-1:821383200340:access-project-WriteTag277B833F-16Q1WU28DM2OB',
         Message=message,
         Subject='Write event for {user}'.format(user=userdata[0])
     )
@@ -54,7 +52,7 @@ def take_picture():
 
 def upload_profile_photo(userdata):
     s3 = boto3.resource('s3', region_name='us-east-1')
-    BUCKET = AccessProjectStack.bucket_name
+    BUCKET = 'access-project-accessprojectbucketf5590f18-kgo5o74f0pcn'
     s3.Bucket(BUCKET).upload_file("profilepic.jpg", f"{userdata[0]}.jpg")
 
 writeresponse = write_rfid_tag()
