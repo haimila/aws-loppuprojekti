@@ -1,4 +1,4 @@
-import json
+
 import boto3
 import os
 
@@ -16,5 +16,7 @@ def create_active_user(event, context):
     }
     table.put_item(Item=item)
 
-    return {"user": event['user']}
+    return {"user": event['user'],
+            "state": "login"
+            }
 

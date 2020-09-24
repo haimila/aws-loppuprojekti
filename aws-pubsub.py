@@ -170,8 +170,8 @@ if __name__ == '__main__':
     # print("{} message(s) received.".format(received_count))
 
 
-    # Disconnect
-    print("Disconnecting...")
-    disconnect_future = mqtt_connection.disconnect()
-    disconnect_future.result()
-    print("Disconnected!")
+    # # Disconnect
+    # print("Disconnecting...")
+    # disconnect_future = mqtt_connection.disconnect()
+    # disconnect_future.result()
+    # print("Disconnected!")
