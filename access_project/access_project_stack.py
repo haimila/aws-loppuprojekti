@@ -526,8 +526,8 @@ class AccessProjectStack(core.Stack):
             resources=["*"]
         )
 
-        region = core.Environment(region='Aws.region')
-        accountid = core.Environment(account='Aws.accountId')
+        region = core.Aws.REGION
+        accountid = core.Aws.ACCOUNT_ID
 
         # create a lambda function "start_state_machine"
         start_state_machine = _lambda.Function(
@@ -540,4 +540,4 @@ class AccessProjectStack(core.Stack):
         )
 
         self._capture_bucket.add_event_notification(s3.EventType.OBJECT_CREATED_PUT,
-                                            notifications.LambdaDestination(start_state_machine))
+                                                    notifications.LambdaDestination(start_state_machine))
