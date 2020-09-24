@@ -297,6 +297,7 @@ class AccessProjectStack(core.Stack):
         state_machine = sf.CfnStateMachine(
             self, 'AccessControlStateMachine',
             role_arn='arn:aws:iam::821383200340:role/service-role/StepFunctions-AccessControlCheckV2-role-814f6a0a',
+            state_machine_name='AccessControlStateMachineCDK',
             definition_string='''{
                "Comment":"RFID tag read state machine",
                "StartAt":"StartUserAuthentication",
@@ -525,6 +526,9 @@ class AccessProjectStack(core.Stack):
             resources=["*"]
         )
 
+        region = core.Environment(region='Aws.region')
+        accountid = core.Environment(account='Aws.accountId')
+
         # create a lambda function "start_state_machine"
         start_state_machine = _lambda.Function(
             self, 'StartStateMachineHandler',
@@ -532,8 +536,8 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='start_dbcheck_state_machine.start_state_machine',
             initial_policy=[start_state_machine_policy_statement],
-            environment={"state_machine": f"arn:aws:states:{core.Environment(region='Aws.region')}:{core.Environment(account='Aws.accountId')}:stateMachine:{state_machine.state_machine_name}"}
-        )
+            environment={"state_machine": f"arn:aws:states:{region}:{accountid}:stateMachine:{state_machine.state_machine_name}"}
 
+        )
         self._capture_bucket.add_event_notification(s3.EventType.OBJECT_CREATED_PUT,
                                             notifications.LambdaDestination(start_state_machine))
