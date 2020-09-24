@@ -39,7 +39,7 @@ class RaspberryStack(core.Stack):
             actions=["sns:Publish"],
             resources=[write_topic.topic_arn]
         )
-        
+
         # create an iam policy "PublishToSnsTopic"
         publish_to_sns_topic_policy = iam.Policy(
             self, "PublishToSnsTopicPolicy",

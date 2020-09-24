@@ -20,8 +20,8 @@ class AccessProjectStack(core.Stack):
         return self._capture_bucket
 
     @property
-    def write_topic(self, _default = None):
-        return self.write_topic
+    def write_topic(self, _default=None):
+        return self._write_topic
 
     def __init__(self, scope: core.Construct, id: str,
                  active_table: dynamodb.Table,
