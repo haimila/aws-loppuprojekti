@@ -6,6 +6,8 @@ import json
 import picamera
 import time
 
+from access_project_stack import AccessProjectStack
+
 reader = SimpleMFRC522()
 sns = boto3.client('sns')
 
@@ -32,7 +34,7 @@ def take_picture():
 def upload_photo(userid):
     try:
         s3 = boto3.resource('s3', region_name='us-east-1')
-        BUCKET = "rasberry-bucket"
+        BUCKET = AccessProjectStack.capture_bucket_name
 
         s3.Bucket(BUCKET).upload_file("example.jpg", f"{userid}-capture.jpg")
 

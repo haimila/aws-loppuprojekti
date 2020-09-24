@@ -11,6 +11,13 @@ from aws_cdk import (
 
 class AccessProjectStack(core.Stack):
 
+    @property
+    def bucket_name(self, _default = None):
+        return self._bucket_name
+
+    @property
+    def capture_bucket_name(self, _default = None):
+        return self._capture_bucket_name
 
     @property
     def bucket(self, _default = None):
@@ -33,14 +40,21 @@ class AccessProjectStack(core.Stack):
             versioned=True
         )
 
+        # Give bucket name value for property which is needed in src/read_rfid_tag.py
+        self._bucket_name = self._bucket.bucket_name
+
+
         # lifecycle_rule = s3.LifecycleRule(
         #     expiration=1
         # )
 
         # create a bucket "AccessProjectCaptureBucket"
         self._capture_bucket = s3.Bucket(
-            self, "AccessProjectCaptureBucket"
+            self, "AccessProjectCaptureBucket",
+            #lifecycle_rules=[lifecycle_rule]
             )
+
+        self._bucket_name = self._capture_bucket.bucket_name
 
         # self._capture_bucket.add_lifecycle_rule = s3.LifecycleRule(
         # )
