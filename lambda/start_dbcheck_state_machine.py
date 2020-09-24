@@ -2,7 +2,7 @@ import json
 import boto3
 import os
 
-sfn = boto3.client('stepfunctions', region_name='us-east-1')
+sfn = boto3.client('stepfunctions', region_name=os.environ['region'])
 
 def start_state_machine(event, context):
 

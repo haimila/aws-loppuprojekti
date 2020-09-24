@@ -124,7 +124,8 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='check_for_user_in_persontable.get_user',
             initial_policy=[check_for_user_in_persontable_policy_statement],
-            environment={"person_table": person_table.table_name}
+            environment={"person_table": person_table.table_name,
+                         "region": region}
         )
 
         # create an iam policy statement to allow lambda function to check if user exists in active table

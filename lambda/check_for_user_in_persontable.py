@@ -1,7 +1,7 @@
 import os
 import boto3
 
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+dynamodb = boto3.resource('dynamodb', region_name=os.environ['region'])
 table = dynamodb.Table(os.environ['person_table'])
 
 def get_user(event, context):
