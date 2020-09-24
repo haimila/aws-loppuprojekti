@@ -52,11 +52,6 @@ class AccessProjectStack(core.Stack):
             self, "WriteTag"
         )
 
-        # create a topic "SendUserDataToRaspberryPi"
-        send_topic = sns.Topic(
-            self, "SendUserDataToRaspberryPi"
-        )
-
         # create an iam policy statement to allow lambda function to write to dynamodb active table
         write_to_activetable_policy_statement = iam.PolicyStatement(
             actions=["dynamodb:PutItem"],
@@ -227,6 +222,14 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='publish_to_iot_topic.publish_to_iot',
             initial_policy=[publish_to_iot_policy_statement]
+        )
+
+        # create a lamdba function "stream_delete_event_to_s3"
+        stream_delete_event_to_s3 = _lambda.Function(
+            self, 'StreamDeleteEventToS3',
+            runtime=_lambda.Runtime.PYTHON_3_7,
+            code=_lambda.Code.asset('lambda'),
+            handler='stream_delete_event_to_s3.stream_delete_event_to_s3'
         )
 
         # create an iam policy statement to allow lambda function to write to failedloginevents table
