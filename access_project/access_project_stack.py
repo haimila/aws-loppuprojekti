@@ -142,8 +142,8 @@ class AccessProjectStack(core.Stack):
         # create an iam policy statement to allow lambda function to get object from access project bucket
         compare_faces_bucket_policy_statement = iam.PolicyStatement(
             actions=["s3:GetObject"],
-            resources=[self._bucket.bucket_arn,
-                       self._capture_bucket.bucket_arn]
+            resources=[self._bucket.bucket_arn+'/*',
+                       self._capture_bucket.bucket_arn+'/*']
         )
 
         # create an iam policy statement to allow lambda function to use rekognition
