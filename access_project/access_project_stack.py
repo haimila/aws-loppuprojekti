@@ -19,6 +19,10 @@ class AccessProjectStack(core.Stack):
     def capture_bucket(self, _default=None):
         return self._capture_bucket
 
+    @property
+    def write_topic(self, _default = None):
+        return self.write_topic
+
     def __init__(self, scope: core.Construct, id: str,
                  active_table: dynamodb.Table,
                  person_table: dynamodb.Table, failedlogins_table: dynamodb.Table,
@@ -44,7 +48,7 @@ class AccessProjectStack(core.Stack):
             )
 
         # create a topic "WriteTag"
-        write_topic = sns.Topic(
+        self._write_topic = sns.Topic(
             self, "WriteTag"
         )
 
@@ -215,7 +219,7 @@ class AccessProjectStack(core.Stack):
         )
 
         # create a lambda subscription for "WriteTag" topic
-        write_topic.add_subscription(subscriptions.LambdaSubscription(persontable_put_user))
+        self._write_topic.add_subscription(subscriptions.LambdaSubscription(persontable_put_user))
 
         # create an iam policy statement to allow lambda function to publish to iot topic
         publish_to_iot_policy_statement = iam.PolicyStatement(
