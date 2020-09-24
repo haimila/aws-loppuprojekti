@@ -260,7 +260,7 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='write_to_failedlogins.write_to_failed_login_table',
             initial_policy=[write_to_failed_login_table_policy_statement],
-            environment={"failedlogins_table": failedlogins_table.table_arn}
+            environment={"failedlogins_table": failedlogins_table.table_name}
         )
 
         # create an iam policy statement to allow lambda function to write to loginevents table
@@ -276,7 +276,7 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='write_to_login_events.write_to_login_events',
             initial_policy=[write_to_login_events_policy_statement],
-            environment={"loginevents_table": loginevents_table.table_arn}
+            environment={"loginevents_table": loginevents_table.table_name}
         )
 
         # create an iam policy statement to allow lambda function to write to logoutevents table
@@ -292,7 +292,7 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='write_to_logout_events.write_to_logout_events',
             initial_policy=[write_to_logout_events_policy_statement],
-            environment={"logoutevents_table": logoutevents_table.table_arn}
+            environment={"logoutevents_table": logoutevents_table.table_name}
         )
 
         state_machine = sf.CfnStateMachine(
