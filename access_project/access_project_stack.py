@@ -21,7 +21,8 @@ class AccessProjectStack(core.Stack):
         return self._capture_bucket
 
     def __init__(self, scope: core.Construct, id: str,
-                 active_table: dynamodb.Table, person_table: dynamodb.Table, failedlogins_table: dynamodb.Table,
+                 active_table: dynamodb.Table,
+                 person_table: dynamodb.Table, failedlogins_table: dynamodb.Table,
                  loginevents_table: dynamodb.Table, logoutevents_table: dynamodb.Table,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
@@ -57,7 +58,7 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='activetable_put_user.create_active_user',
-            initial_policy=[write_to_activetable_policy_statement]
+            #initial_policy=[write_to_activetable_policy_statement]
         )
 
         # create a lambda subscription for "WriteTag" topic
@@ -78,7 +79,7 @@ class AccessProjectStack(core.Stack):
             initial_policy=[delete_user_from_activetable_policy_statement]
         )
 
-        # create an iam policy statement to allow lambda function to check for concurrent users from active table
+        #create an iam policy statement to allow lambda function to check for concurrent users from active table
         check_for_concurrent_users_policy_statement = iam.PolicyStatement(
             actions=["dynamodb:Scan"],
             resources=[active_table.table_arn],
@@ -92,7 +93,7 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='check_for_concurrent_users.check_for_concurrent_users',
             initial_policy=[check_for_concurrent_users_policy_statement],
-            environment={"person_table": person_table.table_name}
+            environment={"active_table": active_table.table_name}
         )
 
         # create an iam policy statement to allow lambda function to check if person exists in person table
