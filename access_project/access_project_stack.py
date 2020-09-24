@@ -31,6 +31,10 @@ class AccessProjectStack(core.Stack):
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
+        # set pseudo parameters to use as environment variables
+        region = core.Aws.REGION
+        accountid = core.Aws.ACCOUNT_ID
+
         # create a bucket "AccessProjectBucket"
         self._bucket = s3.Bucket(
             self, "AccessProjectBucket",
@@ -527,8 +531,7 @@ class AccessProjectStack(core.Stack):
             resources=["*"]
         )
 
-        region = core.Aws.REGION
-        accountid = core.Aws.ACCOUNT_ID
+
 
         # create a lambda function "start_state_machine"
         start_state_machine = _lambda.Function(
@@ -537,7 +540,8 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='start_dbcheck_state_machine.start_state_machine',
             initial_policy=[start_state_machine_policy_statement],
-            environment={"state_machine": "arn:aws:states:%s:%s:stateMachine:%s" % (region, accountid, state_machine.state_machine_name)}
+            environment={"state_machine": "arn:aws:states:%s:%s:stateMachine:%s" % (region, accountid, state_machine.state_machine_name),
+                         "region": region}
         )
 
         self._capture_bucket.add_event_notification(s3.EventType.OBJECT_CREATED_PUT,
