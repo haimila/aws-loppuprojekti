@@ -32,18 +32,16 @@ class AccessProjectStack(core.Stack):
             versioned=True
         )
 
-        # lifecycle_rule = s3.LifecycleRule(
-        #     expiration=1
-        # )
+        # create a lifecycle rule for "AccessProjectCaptureBucket" to remove object after one day from creation
+        lifecycle_rule = s3.LifecycleRule(
+            expiration=core.Duration.days(1)
+        )
 
         # create a bucket "AccessProjectCaptureBucket"
         self._capture_bucket = s3.Bucket(
             self, "AccessProjectCaptureBucket",
-            #lifecycle_rules=[lifecycle_rule]
+            lifecycle_rules=[lifecycle_rule]
             )
-
-        # self._capture_bucket.add_lifecycle_rule = s3.LifecycleRule(
-        # )
 
         # create a topic "WriteTag"
         write_topic = sns.Topic(
