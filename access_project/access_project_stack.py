@@ -32,6 +32,10 @@ class AccessProjectStack(core.Stack):
             versioned=True
         )
 
+        # lifecycle_rule = s3.LifecycleRule(
+        #     expiration=1
+        # )
+
         # create a bucket "AccessProjectCaptureBucket"
         self._capture_bucket = s3.Bucket(
             self, "AccessProjectCaptureBucket"
@@ -43,6 +47,11 @@ class AccessProjectStack(core.Stack):
         # create a topic "WriteTag"
         write_topic = sns.Topic(
             self, "WriteTag"
+        )
+
+        # create a topic "SendUserDataToRaspberryPi"
+        send_topic = sns.Topic(
+            self, "SendUserDataToRaspberryPi"
         )
 
         # create an iam policy statement to allow lambda function to write to dynamodb active table
@@ -94,7 +103,7 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='check_for_concurrent_users.check_for_concurrent_users',
             initial_policy=[check_for_concurrent_users_policy_statement],
-            environment={"person_table": person_table.table_name}
+            environment={"active_table": active_table.table_name}
         )
 
         # create an iam policy statement to allow lambda function to check if person exists in person table
@@ -124,7 +133,8 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='check_if_user_is_active.check_if_user_is_active',
-            initial_policy=[check_if_user_is_active_policy_statement]
+            initial_policy=[check_if_user_is_active_policy_statement],
+            environment={"active_table": active_table.table_name}
         )
 
         # create an iam policy statement to allow lambda function to get object from access project bucket

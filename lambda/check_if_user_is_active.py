@@ -1,8 +1,8 @@
-import json
+import os
 import boto3
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-table = dynamodb.Table('active')
+table = dynamodb.Table(os.environ['active_table'])
 
 
 def check_if_user_is_active(event, context):
