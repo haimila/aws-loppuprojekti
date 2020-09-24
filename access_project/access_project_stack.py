@@ -6,6 +6,7 @@ from aws_cdk import (
     aws_iam as iam,
     aws_dynamodb as dynamodb,
     aws_stepfunctions as sf,
+    aws_s3_notifications as notifications,
     core
 )
 
@@ -533,3 +534,6 @@ class AccessProjectStack(core.Stack):
             initial_policy=[start_state_machine_policy_statement],
             environment={"state_machine": state_machine.logical_id}
         )
+
+        self._capture_bucket.add_event_notification(s3.EventType.OBJECT_CREATED_PUT,
+                                            notifications.LambdaDestination(start_state_machine))

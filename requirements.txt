@@ -16,6 +16,7 @@ aws-cdk.aws-lambda==1.63.0
 aws-cdk.aws-logs==1.63.0
 aws-cdk.aws-s3==1.63.0
 aws-cdk.aws-s3-assets==1.63.0
+aws-cdk.aws-s3-notifications==1.64.0
 aws-cdk.aws-sns==1.63.0
 aws-cdk.aws-sns-subscriptions==1.63.0
 aws-cdk.aws-sqs==1.63.0
