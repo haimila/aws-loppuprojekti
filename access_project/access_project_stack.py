@@ -537,6 +537,7 @@ class AccessProjectStack(core.Stack):
             handler='start_dbcheck_state_machine.start_state_machine',
             initial_policy=[start_state_machine_policy_statement],
             environment={"state_machine": "arn:aws:states:%s:%s:stateMachine:%s" % (region, accountid, state_machine.state_machine_name)}
+        )
 
-        )        self._capture_bucket.add_event_notification(s3.EventType.OBJECT_CREATED_PUT,
+        self._capture_bucket.add_event_notification(s3.EventType.OBJECT_CREATED_PUT,
                                             notifications.LambdaDestination(start_state_machine))
