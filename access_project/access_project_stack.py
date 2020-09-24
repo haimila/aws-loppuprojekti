@@ -527,7 +527,7 @@ class AccessProjectStack(core.Stack):
             self, 'StartStateMachineHandler',
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
-            handler='start_state-machine.start_state_machine',
+            handler='start_dbcheck_state_machine.start_state_machine',
             initial_policy=[start_state_machine_policy_statement],
             environment={"state_machine": state_machine.logical_id}
         )

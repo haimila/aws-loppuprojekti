@@ -1,0 +1,1 @@
+python3 aws-iot-pubsub.py --endpoint "a32uqpa8m3tpx7-ats.iot.us-east-1.amazonaws.com" --cert /home/pi/UudetAvaimet/x509cert.pem --key /home/pi/UudetAvaimet/privatekey.pem --root-ca /home/pi/UudetAvaimet/AmazonRootCA1.pem --topic raspberry/accesstopic --client-id RASPIS --use-websocket --signing-region us-east-1 &
