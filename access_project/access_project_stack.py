@@ -21,7 +21,8 @@ class AccessProjectStack(core.Stack):
         return self._capture_bucket
 
     def __init__(self, scope: core.Construct, id: str,
-                 active_table: dynamodb.Table, person_table: dynamodb.Table, failedlogins_table: dynamodb.Table,
+                 active_table: dynamodb.Table,
+                 person_table: dynamodb.Table, failedlogins_table: dynamodb.Table,
                  loginevents_table: dynamodb.Table, logoutevents_table: dynamodb.Table,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
@@ -89,7 +90,7 @@ class AccessProjectStack(core.Stack):
             environment={"active_table": active_table.table_name}
         )
 
-        # create an iam policy statement to allow lambda function to check for concurrent users from active table
+        #create an iam policy statement to allow lambda function to check for concurrent users from active table
         check_for_concurrent_users_policy_statement = iam.PolicyStatement(
             actions=["dynamodb:Scan"],
             resources=[active_table.table_arn],
