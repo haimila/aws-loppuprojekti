@@ -532,7 +532,7 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='start_dbcheck_state_machine.start_state_machine',
             initial_policy=[start_state_machine_policy_statement],
-            environment={"state_machine": state_machine.logical_id}
+            environment={"state_machine": f"arn:aws:states:{core.Environment(region='Aws.region')}:{core.Environment(account='Aws.accountId')}:stateMachine:{state_machine.state_machine_name}"}
         )
 
         self._capture_bucket.add_event_notification(s3.EventType.OBJECT_CREATED_PUT,
