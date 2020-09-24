@@ -2,7 +2,7 @@ import json
 import boto3
 import os
 
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+dynamodb = boto3.resource('dynamodb', region_name=os.environ['region'])
 table = dynamodb.Table(os.environ['person_table'])
 
 

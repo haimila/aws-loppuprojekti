@@ -75,7 +75,8 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='activetable_put_user.create_active_user',
             initial_policy=[write_to_activetable_policy_statement],
-            environment={"active_table": active_table.table_name}
+            environment={"active_table": active_table.table_name,
+                         "region": region}
         )
 
         # create an iam policy statement to allow lambda function to remove user from dynamodb active table
@@ -91,7 +92,8 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='activetable_remove_user.remove_user_from_active_table',
             initial_policy=[delete_user_from_activetable_policy_statement],
-            environment={"active_table": active_table.table_name}
+            environment={"active_table": active_table.table_name,
+                         "region": region}
         )
 
         #create an iam policy statement to allow lambda function to check for concurrent users from active table
@@ -108,7 +110,8 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='check_for_concurrent_users.check_for_concurrent_users',
             initial_policy=[check_for_concurrent_users_policy_statement],
-            environment={"active_table": active_table.table_name}
+            environment={"active_table": active_table.table_name,
+                         "region": region}
         )
 
         # create an iam policy statement to allow lambda function to check if person exists in person table
@@ -141,7 +144,8 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='check_if_user_is_active.check_if_user_is_active',
             initial_policy=[check_if_user_is_active_policy_statement],
-            environment={"active_table": active_table.table_name}
+            environment={"active_table": active_table.table_name,
+                         "region": region}
         )
 
         # create an iam policy statement to allow lambda function to get object from access project bucket
@@ -165,7 +169,8 @@ class AccessProjectStack(core.Stack):
             handler='compare_faces.compare_faces',
             initial_policy=[compare_faces_bucket_policy_statement, rekognition_policy_statement],
             environment={"original_photo_bucket": self._bucket.bucket_name,
-                         "capture_photo_bucket": self._capture_bucket.bucket_name
+                         "capture_photo_bucket": self._capture_bucket.bucket_name,
+                         "region": region
                          }
         )
 
@@ -222,7 +227,8 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='persontable_put_user.create_new_user',
             initial_policy=[person_table_put_user_policy_statement],
-            environment={"person_table": person_table.table_name}
+            environment={"person_table": person_table.table_name,
+                         "region": region}
         )
 
         # create a lambda subscription for "WriteTag" topic
@@ -240,7 +246,8 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='publish_to_iot_topic.publish_to_iot',
-            initial_policy=[publish_to_iot_policy_statement]
+            initial_policy=[publish_to_iot_policy_statement],
+            environment={"region": region}
         )
 
         # create a lamdba function "stream_delete_event_to_s3"
@@ -265,7 +272,8 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='write_to_failedlogins.write_to_failed_login_table',
             initial_policy=[write_to_failed_login_table_policy_statement],
-            environment={"failedlogins_table": failedlogins_table.table_name}
+            environment={"failedlogins_table": failedlogins_table.table_name,
+                         "region": region}
         )
 
         # create an iam policy statement to allow lambda function to write to loginevents table
@@ -281,7 +289,8 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='write_to_login_events.write_to_login_events',
             initial_policy=[write_to_login_events_policy_statement],
-            environment={"loginevents_table": loginevents_table.table_name}
+            environment={"loginevents_table": loginevents_table.table_name,
+                         "region": region}
         )
 
         # create an iam policy statement to allow lambda function to write to logoutevents table
@@ -297,7 +306,8 @@ class AccessProjectStack(core.Stack):
             code=_lambda.Code.asset('lambda'),
             handler='write_to_logout_events.write_to_logout_events',
             initial_policy=[write_to_logout_events_policy_statement],
-            environment={"logoutevents_table": logoutevents_table.table_name}
+            environment={"logoutevents_table": logoutevents_table.table_name,
+                         "region": region}
         )
 
         state_machine = sf.CfnStateMachine(

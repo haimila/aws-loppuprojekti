@@ -1,7 +1,7 @@
 import os
 import boto3
 
-dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+dynamodb = boto3.client('dynamodb', region_name=os.environ['region'])
 
 
 def check_for_concurrent_users(event, context):

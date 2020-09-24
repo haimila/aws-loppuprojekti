@@ -1,7 +1,7 @@
 import boto3
 import os
 
-client = boto3.client('rekognition', region_name='us-east-1')
+client = boto3.client('rekognition', region_name=os.environ['region'])
 
 
 def compare_faces(event, contex):
