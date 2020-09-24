@@ -9,7 +9,7 @@ import time
 reader = SimpleMFRC522()
 sns = boto3.client('sns')
 
-#kolmas testimuutos
+#neljäs testimuutos
 def read_rfid_tag():
 
         try:
