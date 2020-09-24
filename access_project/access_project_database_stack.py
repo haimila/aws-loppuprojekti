@@ -1,7 +1,9 @@
 from aws_cdk import (
     aws_dynamodb as dynamodb,
-    core
+    core, aws_dynamodb
 )
+
+
 class DatabaseStack(core.Stack):
 
     @property
@@ -30,32 +32,94 @@ class DatabaseStack(core.Stack):
         # create a table called "person"
         self._person_table = dynamodb.Table(
             self, 'person',
-            partition_key={'name': 'id', 'type': dynamodb.AttributeType.STRING},
+            partition_key=aws_dynamodb.Attribute(
+                name='id',
+                type=aws_dynamodb.AttributeType.STRING),
+            read_capacity=1,
+            write_capacity=1
         )
 
         # create a table called "active"
         self._active_table = dynamodb.Table(
             self, 'active',
-            partition_key={'name': 'id', 'type': dynamodb.AttributeType.STRING},
+            partition_key=aws_dynamodb.Attribute(
+                name='id',
+                type=aws_dynamodb.AttributeType.STRING),
+            read_capacity=1,
+            write_capacity=1
         )
 
         # create a table called "loginevents"
         self._loginevents_table = dynamodb.Table(
             self, 'loginevents',
-            partition_key={'name': 'eventid', 'type': dynamodb.AttributeType.STRING},
-            sort_key={'name': 'userid', 'type': dynamodb.AttributeType.STRING}
+            partition_key=aws_dynamodb.Attribute(
+                name='eventid',
+                type=aws_dynamodb.AttributeType.STRING),
+            sort_key=aws_dynamodb.Attribute(
+                name='userid',
+                type=aws_dynamodb.AttributeType.STRING),
+            read_capacity=1,
+            write_capacity=1
+            )
+
+        self._loginevents_table.add_global_secondary_index(
+            index_name='userid-timestamp-index',
+            partition_key=aws_dynamodb.Attribute(
+                name='userid',
+                type=aws_dynamodb.AttributeType.STRING),
+            sort_key=aws_dynamodb.Attribute(
+                name='timestamp',
+                type=aws_dynamodb.AttributeType.STRING),
+            read_capacity=1,
+            write_capacity=1
         )
 
         # create a table called "logoutevents"
         self._logoutevents_table = dynamodb.Table(
             self, 'logoutevents',
-            partition_key={'name': 'eventid', 'type': dynamodb.AttributeType.STRING},
-            sort_key={'name': 'userid', 'type': dynamodb.AttributeType.STRING}
+            partition_key=aws_dynamodb.Attribute(
+                name='eventid',
+                type=aws_dynamodb.AttributeType.STRING),
+            sort_key=aws_dynamodb.Attribute(
+                name='userid',
+                type=aws_dynamodb.AttributeType.STRING),
+            read_capacity=1,
+            write_capacity=1
+        )
+
+        self._logoutevents_table.add_global_secondary_index(
+            index_name='userid-timestamp-index',
+            partition_key=aws_dynamodb.Attribute(
+                name='userid',
+                type=aws_dynamodb.AttributeType.STRING),
+            sort_key=aws_dynamodb.Attribute(
+                name='timestamp',
+                type=aws_dynamodb.AttributeType.STRING),
+            read_capacity=1,
+            write_capacity=1
         )
 
         # create a table called "failedlogins"
         self._failedlogins_table = dynamodb.Table(
             self, 'failedlogins',
-            partition_key={'name': 'eventid', 'type': dynamodb.AttributeType.STRING},
-            sort_key={'name': 'userid', 'type': dynamodb.AttributeType.STRING}
+            partition_key=aws_dynamodb.Attribute(
+                name='eventid',
+                type=aws_dynamodb.AttributeType.STRING),
+            sort_key=aws_dynamodb.Attribute(
+                name='userid',
+                type=aws_dynamodb.AttributeType.STRING),
+            read_capacity=1,
+            write_capacity=1
+        )
+
+        self._failedlogins_table.add_global_secondary_index(
+            index_name='userid-timestamp-index',
+            partition_key=aws_dynamodb.Attribute(
+                name='userid',
+                type=aws_dynamodb.AttributeType.STRING),
+            sort_key=aws_dynamodb.Attribute(
+                name='timestamp',
+                type=aws_dynamodb.AttributeType.STRING),
+            read_capacity=1,
+            write_capacity=1
         )

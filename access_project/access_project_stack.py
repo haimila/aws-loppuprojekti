@@ -32,29 +32,17 @@ class AccessProjectStack(core.Stack):
             versioned=True
         )
 
-        # lifecycle_rule = s3.LifecycleRule(
-        #     expiration=1
-        # )
-
         # create a bucket "AccessProjectCaptureBucket"
         self._capture_bucket = s3.Bucket(
-            self, "AccessProjectCaptureBucket",
-            #lifecycle_rules=[lifecycle_rule]
-        )
+            self, "AccessProjectCaptureBucket"
+            )
 
-        #TODO This is still under development
-        # duration = core.Duration()
-        # duration.days('1')
-        # self._capture_bucket.add_lifecycle_rule(expiration=duration)
+        # self._capture_bucket.add_lifecycle_rule = s3.LifecycleRule(
+        # )
 
         # create a topic "WriteTag"
         write_topic = sns.Topic(
             self, "WriteTag"
-        )
-
-        # create a topic "SendUserDataToRaspberryPi"
-        send_topic = sns.Topic(
-            self, "SendUserDataToRaspberryPi"
         )
 
         # create an iam policy statement to allow lambda function to write to dynamodb active table
@@ -95,7 +83,8 @@ class AccessProjectStack(core.Stack):
         # create an iam policy statement to allow lambda function to check for concurrent users from active table
         check_for_concurrent_users_policy_statement = iam.PolicyStatement(
             actions=["dynamodb:Scan"],
-            resources=[active_table.table_arn]
+            resources=[active_table.table_arn],
+
         )
 
         # create a lambda function "check_for_concurrent_users"
@@ -104,7 +93,8 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='check_for_concurrent_users.check_for_concurrent_users',
-            initial_policy=[check_for_concurrent_users_policy_statement]
+            initial_policy=[check_for_concurrent_users_policy_statement],
+            environment={"person_table": person_table.table_name}
         )
 
         # create an iam policy statement to allow lambda function to check if person exists in person table
@@ -213,7 +203,8 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='persontable_put_user.create_new_user',
-            initial_policy=[person_table_put_user_policy_statement]
+            initial_policy=[person_table_put_user_policy_statement],
+            environment={"person_table": person_table.table_name}
         )
 
         # create an iam policy statement to allow lambda function to publish to iot topic
@@ -231,6 +222,15 @@ class AccessProjectStack(core.Stack):
             initial_policy=[publish_to_iot_policy_statement]
         )
 
+        # create a lamdba function "stream_delete_event_to_s3"
+        stream_delete_event_to_s3 = _lambda.Function(
+            self, 'StreamDeleteEventToS3',
+            runtime=_lambda.Runtime.PYTHON_3_7,
+            code=_lambda.Code.asset('lambda'),
+            handler='stream_delete_event_to_s3.stream_delete_event_to_s3',
+            environment={"original_photo_bucket": self._bucket.bucket_name}
+        )
+
         # create an iam policy statement to allow lambda function to write to failedloginevents table
         write_to_failed_login_table_policy_statement = iam.PolicyStatement(
             actions=["dynamodb:PutItem"],
@@ -243,7 +243,8 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='write_to_failedlogins.write_to_failed_login_table',
-            initial_policy=[write_to_failed_login_table_policy_statement]
+            initial_policy=[write_to_failed_login_table_policy_statement],
+            environment={"failedlogins_table": failedlogins_table.table_arn}
         )
 
         # create an iam policy statement to allow lambda function to write to loginevents table
@@ -258,7 +259,8 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='write_to_login_events.write_to_login_events',
-            initial_policy=[write_to_login_events_policy_statement]
+            initial_policy=[write_to_login_events_policy_statement],
+            environment={"loginevents_table": loginevents_table.table_arn}
         )
 
         # create an iam policy statement to allow lambda function to write to logoutevents table
@@ -273,7 +275,8 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='write_to_logout_events.write_to_logout_events',
-            initial_policy=[write_to_logout_events_policy_statement]
+            initial_policy=[write_to_logout_events_policy_statement],
+            environment={"logoutevents_table": logoutevents_table.table_arn}
         )
 
         state_machine = sf.CfnStateMachine(
@@ -513,5 +516,6 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='start_state-machine.start_state_machine',
-            initial_policy=[start_state_machine_policy_statement]
+            initial_policy=[start_state_machine_policy_statement],
+            environment={"state_machine": state_machine.logical_id}
         )
