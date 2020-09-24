@@ -69,7 +69,8 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='activetable_put_user.create_active_user',
-            initial_policy=[write_to_activetable_policy_statement]
+            initial_policy=[write_to_activetable_policy_statement],
+            environment={"active_table": active_table.table_name}
         )
 
         # create a lambda subscription for "WriteTag" topic
@@ -87,7 +88,8 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='activetable_remove_user.remove_user_from_active_table',
-            initial_policy=[delete_user_from_activetable_policy_statement]
+            initial_policy=[delete_user_from_activetable_policy_statement],
+            environment={"active_table": active_table.table_name}
         )
 
         # create an iam policy statement to allow lambda function to check for concurrent users from active table
