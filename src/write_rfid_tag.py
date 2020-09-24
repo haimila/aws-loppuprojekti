@@ -47,7 +47,7 @@ def take_picture():
     camera = picamera.PiCamera()
     print("Taking picture in 3 seconds")
     time.sleep(3)
-    camera.rotatio n =180
+    camera.rotation =180
     camera.capture('profilepic.jpg')
 
 def upload_profile_photo(userdata):

@@ -1,5 +1,6 @@
 import json
 import boto3
+import os
 
 sfn = boto3.client('stepfunctions', region_name='us-east-1')
 
@@ -9,5 +10,5 @@ def start_state_machine(event, context):
     userid = objectkey[:-12]
 
     sfn.start_execution(
-        stateMachineArn='arn:aws:states:us-east-1:821383200340:stateMachine:AccessControlCheckV2',
+        stateMachineArn=os.environ['state_machine'],
         input=json.dumps({"userid": userid}))

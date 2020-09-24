@@ -1,8 +1,8 @@
 import boto3
-import json
+import os
 
 s3 = boto3.resource('s3')
-bucket = s3.Bucket('rasberry-bucket')
+bucket = s3.Bucket(os.environ['original_photo_bucket'])
 
 
 def stream_delete_event_to_s3(event, context):

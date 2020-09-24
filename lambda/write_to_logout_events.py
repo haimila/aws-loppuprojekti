@@ -1,9 +1,10 @@
 import boto3
 from datetime import datetime
 import uuid
+import os
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-table = dynamodb.Table('logoutevents')
+table = dynamodb.Table(os.environ['logoutevents_table'])
 
 
 def write_to_logout_events(event, context):

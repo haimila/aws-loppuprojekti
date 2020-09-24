@@ -1,9 +1,10 @@
 import boto3
 from datetime import datetime
 import uuid
+import os
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-table = dynamodb.Table('failedlogins')
+table = dynamodb.Table(os.environ['failedlogins_table'])
 
 
 def write_to_failed_login_table(event, context):
