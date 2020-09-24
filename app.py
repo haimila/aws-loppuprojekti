@@ -15,6 +15,8 @@ accessStack = AccessProjectStack(app, "access-project",
                                  failedlogins_table=databaseStack.failedlogins_table,
                                  loginevents_table=databaseStack.loginevents_table,
                                  logoutevents_table=databaseStack.logoutevents_table)
-RaspberryStack(app, "access-project-raspberry", bucket=accessStack.bucket)
+RaspberryStack(app, "access-project-raspberry",
+               bucket=accessStack.bucket,
+               capture_bucket=accessStack.bucket)
 
 app.synth()

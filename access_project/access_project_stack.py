@@ -69,9 +69,6 @@ class AccessProjectStack(core.Stack):
             environment={"active_table": active_table.table_name}
         )
 
-        # create a lambda subscription for "WriteTag" topic
-        write_topic.add_subscription(subscriptions.LambdaSubscription(activetable_put_user))
-
         # create an iam policy statement to allow lambda function to remove user from dynamodb active table
         delete_user_from_activetable_policy_statement = iam.PolicyStatement(
             actions=["dynamodb:DeleteItem"],
@@ -216,6 +213,9 @@ class AccessProjectStack(core.Stack):
             initial_policy=[person_table_put_user_policy_statement],
             environment={"person_table": person_table.table_name}
         )
+
+        # create a lambda subscription for "WriteTag" topic
+        write_topic.add_subscription(subscriptions.LambdaSubscription(persontable_put_user))
 
         # create an iam policy statement to allow lambda function to publish to iot topic
         publish_to_iot_policy_statement = iam.PolicyStatement(
