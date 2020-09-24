@@ -104,7 +104,8 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='check_for_concurrent_users.check_for_concurrent_users',
-            initial_policy=[check_for_concurrent_users_policy_statement]
+            initial_policy=[check_for_concurrent_users_policy_statement],
+            environment={"active_table": active_table.table_name}
         )
 
         # create an iam policy statement to allow lambda function to check if person exists in person table
@@ -134,7 +135,8 @@ class AccessProjectStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.asset('lambda'),
             handler='check_if_user_is_active.check_if_user_is_active',
-            initial_policy=[check_if_user_is_active_policy_statement]
+            initial_policy=[check_if_user_is_active_policy_statement],
+            environment={"active_table": active_table.table_name}
         )
 
         # create an iam policy statement to allow lambda function to get object from access project bucket

@@ -1,4 +1,4 @@
-import json
+import os
 import boto3
 
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
@@ -6,7 +6,7 @@ dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 
 def check_for_concurrent_users(event, context):
     checklist = []
-    userlist = dynamodb.scan(TableName='active')
+    userlist = dynamodb.scan(TableName=os.environ['active_table'])
 
     users = userlist['Items']
 
