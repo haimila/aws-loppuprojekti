@@ -11,12 +11,21 @@ def write_to_failed_login_table(event, context):
     dateTimeObj = datetime.now()
     timestampStr = dateTimeObj.strftime("%d-%b-%Y (%H:%M:%S)")
 
-    item = {
-        'eventid': str(uuid.uuid4()),
-        'userid': event['user']['id'],
-        'timestamp': timestampStr,
-        'message': event['response']['message']
-    }
+    if event['user'] == 'unknown':
+        item = {
+            'eventid': str(uuid.uuid4()),
+            'userid': event['user'],
+            'timestamp': timestampStr,
+            'message': event['response']['message']
+        }
+    else:
+        item = {
+            'eventid': str(uuid.uuid4()),
+            'userid': event['user']['id'],
+            'timestamp': timestampStr,
+            'message': event['response']['message']
+        }
+
     table.put_item(Item=item)
 
     response = event['response']
