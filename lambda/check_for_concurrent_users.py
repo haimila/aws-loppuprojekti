@@ -3,6 +3,7 @@ import boto3
 
 dynamodb = boto3.client('dynamodb', region_name=os.environ['region'])
 
+# scans the Active table for user ids and produces a list with a length equal to the number of userids in the table
 
 def check_for_concurrent_users(event, context):
     checklist = []

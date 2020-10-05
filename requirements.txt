@@ -1,25 +1,17 @@
 -e .
 attrs==20.2.0
 aws-cdk.assets==1.63.0
-aws-cdk.aws-applicationautoscaling==1.63.0
 aws-cdk.aws-autoscaling-common==1.63.0
 aws-cdk.aws-cloudformation==1.63.0
-aws-cdk.aws-cloudwatch==1.63.0
-aws-cdk.aws-codeguruprofiler==1.63.0
 aws-cdk.aws-dynamodb==1.63.0
-aws-cdk.aws-ec2==1.63.0
-aws-cdk.aws-efs==1.63.0
 aws-cdk.aws-events==1.63.0
 aws-cdk.aws-iam==1.63.0
-aws-cdk.aws-kms==1.63.0
 aws-cdk.aws-lambda==1.63.0
-aws-cdk.aws-logs==1.63.0
 aws-cdk.aws-s3==1.63.0
 aws-cdk.aws-s3-assets==1.63.0
 aws-cdk.aws-s3-notifications==1.64.0
 aws-cdk.aws-sns==1.63.0
 aws-cdk.aws-sns-subscriptions==1.63.0
-aws-cdk.aws-sqs==1.63.0
 aws-cdk.aws-ssm==1.63.0
 aws-cdk.aws-stepfunctions==1.63.0
 aws-cdk.cloud-assembly-schema==1.63.0

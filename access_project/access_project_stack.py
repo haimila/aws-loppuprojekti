@@ -310,9 +310,28 @@ class AccessProjectStack(core.Stack):
                          "region": region}
         )
 
+        # creates policy statement to allow state machine Lambda invocation
+        inline_state_machine_statement = iam.PolicyStatement(
+            actions=['lambda:InvokeFunction'],
+            effect=iam.Effect.ALLOW,
+            resources=['*']
+        )
+
+        # creates a new policy document and attaches the above statement to it
+        inline_state_machine_policy = iam.PolicyDocument()
+        inline_state_machine_policy.add_statements(inline_state_machine_statement)
+
+        # creates state machine role which can be assumed by the states service principal
+        state_machine_role = iam.Role(
+            self, 'StateMachineRole',
+            assumed_by=iam.ServicePrincipal('states.amazonaws.com'),
+            inline_policies=[inline_state_machine_policy]
+        )
+
+        # create a state machine with the provided definition. Lambda functions are referred with string literals
         state_machine = sf.CfnStateMachine(
             self, 'AccessControlStateMachine',
-            role_arn='arn:aws:iam::821383200340:role/service-role/StepFunctions-AccessControlCheckV2-role-814f6a0a',
+            role_arn=state_machine_role.role_arn,
             state_machine_name='AccessControlStateMachineCDK',
             definition_string='''{
                "Comment":"RFID tag read state machine",
